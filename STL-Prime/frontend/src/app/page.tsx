@@ -53,13 +53,9 @@ export default function STLPrimeApp() {
             <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
 
-                    {/* Logo */}
-                    <div className="flex items-center gap-2 cursor-pointer">
-                        <img src="/logo.svg" alt="STL Prime Logo" className="w-10 h-10 rounded-xl" />
-                        <div className="flex flex-col leading-none">
-                            <span className="font-black text-xl tracking-tight" style={{ color: theme.dark }}>stl<span style={{ color: theme.blue }}>prime</span></span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">by Data Frontier</span>
-                        </div>
+                    {/* Logo (Icon Only for Minimalist Look) */}
+                    <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+                        <img src="/logo.svg" alt="STL Prime Logo" className="w-12 h-12" />
                     </div>
 
                     {/* Search Desktop (Secundária) */}
@@ -340,9 +336,9 @@ export default function STLPrimeApp() {
             {/* Footer Minimalista */}
             <footer className="py-12 border-t border-gray-200" style={{ backgroundColor: theme.white }}>
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-2">
-                        <img src="/logo.svg" alt="STL Prime Logo" className="w-8 h-8 rounded-lg" />
-                        <span className="font-black text-xl tracking-tight" style={{ color: theme.dark }}>stl<span style={{ color: theme.blue }}>prime</span></span>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.svg" alt="STL Prime Logo" className="w-10 h-10" />
+                        <span className="font-bold text-gray-400 text-sm uppercase tracking-widest">STL Prime</span>
                     </div>
 
                     <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">

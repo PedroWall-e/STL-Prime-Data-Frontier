@@ -1,0 +1,9 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo Arredondado -->
+  <rect width="40" height="40" rx="10" fill="#3347FF"/>
+  <!-- Ícone de Cubo Isometrico -->
+  <path d="M20 10L32 16V28L20 34L8 28V16L20 10Z" fill="white" fill-opacity="0.2"/>
+  <path d="M20 10V22L32 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 22L8 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 22V34" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

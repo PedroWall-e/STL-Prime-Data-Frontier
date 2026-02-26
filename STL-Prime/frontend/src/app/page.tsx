@@ -1,101 +1,274 @@
 import React from 'react';
-import { ArrowRight, BarChart3, Binary, Rocket, ShieldCheck, Zap } from 'lucide-react';
+import {
+    Search,
+    TrendingUp,
+    ChevronRight,
+    Star,
+    Download,
+    Heart,
+    Printer,
+    ShieldCheck,
+    Box
+} from 'lucide-react';
 import Link from 'next/link';
 
-export default function LandingPage() {
+// Dados Simulados (Mock Data) para o Marketplace
+const TRENDING_MODELS = [
+    { id: 1, title: 'Suporte Articulado para Monitor V2', author: '@EngenhariaDF', price: 0, downloads: '12.4k', likes: 3420, format: '3MF + STL', imageUrl: 'https://images.unsplash.com/photo-1544006659-f0b21f04cb1d?auto=format&fit=crop&q=80&w=600' },
+    { id: 2, title: 'Case IoT Satelital - Robusto', author: '@DataFrontier_Lab', price: 15.50, downloads: '892', likes: 450, format: '3MF', imageUrl: 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=600' },
+    { id: 3, title: 'Engrenagem Planetária Paramétrica', author: '@MakerPro', price: 0, downloads: '5.1k', likes: 1200, format: 'STL', imageUrl: 'https://images.unsplash.com/photo-1537724326059-2ea20251b9c8?auto=format&fit=crop&q=80&w=600' },
+    { id: 4, title: 'Organizador Gridfinity Premium', author: '@DesktopHacks', price: 4.99, downloads: '2.3k', likes: 890, format: '3MF + STL', imageUrl: 'https://images.unsplash.com/photo-1585336261022-680e295ce3fe?auto=format&fit=crop&q=80&w=600' },
+    { id: 5, title: 'Vaso Geométrico Texturizado', author: '@HomeDeco3D', price: 0, downloads: '18k', likes: 5600, format: 'STL', imageUrl: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=600' },
+    { id: 6, title: 'Turbina a Jato (Modelo Educacional)', author: '@AeroSpace', price: 25.00, downloads: '410', likes: 315, format: '3MF', imageUrl: 'https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&q=80&w=600' },
+    { id: 7, title: 'Braço Robótico de 6 Eixos', author: '@RoboTech', price: 45.00, downloads: '1.1k', likes: 890, format: '3MF + STL', imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=600' },
+    { id: 8, title: 'Clipe de Cabos Minimalista', author: '@PragmaticDesign', price: 0, downloads: '32k', likes: 8900, format: 'STL', imageUrl: 'https://images.unsplash.com/photo-1520106292556-9a2ed935a8bc?auto=format&fit=crop&q=80&w=600' },
+];
+
+const CATEGORIES = [
+    'Prototipagem', 'Cases IoT', 'Engrenagens', 'Gridfinity', 'Miniaturas', 'Utilidades', 'Ferramentas', 'Robótica'
+];
+
+export default function STLPrimeApp() {
     return (
         <main className="min-h-screen">
-            {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-prime-950/20 via-black to-black" />
-                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay opacity-20" />
-                </div>
 
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-prime-950/50 border border-prime-500/30 text-prime-400 text-sm font-bold mb-8 animate-fade-in uppercase tracking-tighter">
-                        <span className="w-2 h-2 rounded-full bg-prime-500 animate-pulse" />
-                        Nova Fronteira de Dados
+            {/* Hero Section */}
+            <header className="relative pt-16 pb-24 md:pt-24 md:pb-32 overflow-hidden bg-df-peach">
+                {/* Padrão de Fundo Subtil */}
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#B2624F_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+
+                <div className="container mx-auto px-4 md:px-6 relative z-10 flex flex-col items-center text-center">
+
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 border border-df-blue/20 text-df-blue text-xs font-bold mb-8 backdrop-blur-sm shadow-sm">
+                        <Star size={14} className="fill-df-blue" />
+                        <span className="uppercase tracking-wide">O Marketplace 3D da Data Frontier</span>
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-black font-outfit mb-8 leading-tight tracking-tighter animate-fade-in">
-                        CRIAR. IMPRIMIR. <br />
-                        <span className="text-gradient drop-shadow-[0_0_15px_rgba(225,29,72,0.4)]">DOMINAR.</span>
+                    <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-balance text-df-dark">
+                        Design de Fronteira. <br className="hidden md:block" />
+                        <span className="text-df-blue">Impressão de Precisão.</span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 animate-fade-in leading-relaxed">
-                        A primeira plataforma de arquivos STL orquestrada por dados reais de mercado.
-                        Não apenas imprima, evolua seu negócio 3D com a <span className="text-white font-bold">STL Prime</span>.
+                    <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto mb-10 font-medium text-balance">
+                        Descarregue milhares de ficheiros STL e 3MF premium. Modelos otimizados e testados pela nossa equipa de engenharia para garantir impressões perfeitas.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in">
-                        <Link href="/catalog/paid" className="w-full sm:w-auto px-10 py-5 rounded-full bg-prime-600 hover:bg-prime-500 text-white font-black text-lg transition-all shadow-2xl shadow-prime-600/40 hover:scale-105 flex items-center justify-center gap-3">
-                            EXPLORAR CATÁLOGO <Rocket size={24} />
-                        </Link>
-                        <Link href="/auth/signup" className="w-full sm:w-auto px-10 py-5 rounded-full glass-card hover:bg-white/5 text-white font-bold text-lg transition-all border-white/20">
-                            Assinar Plano Prime
-                        </Link>
+                    {/* Barra de Pesquisa Principal */}
+                    <div className="w-full max-w-3xl relative shadow-2xl rounded-2xl group">
+                        <div className="absolute -inset-1 bg-df-blue rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                        <div className="relative flex items-center w-full bg-white border-2 border-transparent focus-within:border-df-blue rounded-2xl overflow-hidden transition-all">
+                            <div className="pl-6 text-df-rawhide">
+                                <Search size={26} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Ex: Suporte de Monitor, Engrenagens, Cases..."
+                                className="w-full bg-transparent py-5 md:py-6 px-4 text-[#2B2B2B] outline-none font-medium text-lg placeholder:text-gray-400"
+                            />
+                            <button className="hidden md:block px-10 py-6 font-bold text-white transition-colors hover:bg-blue-700 bg-df-blue">
+                                Procurar
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Tags Populares */}
+                    <div className="flex flex-wrap justify-center gap-3 mt-8">
+                        <span className="text-sm font-bold text-gray-600 py-2">Tendências:</span>
+                        {['IoT', 'Articulados', 'Impressão em Resina', 'Gridfinity'].map((tag) => (
+                            <Link key={tag} href="#" className="px-4 py-2 rounded-full bg-white/50 border border-df-rawhide/20 text-df-rawhide text-sm font-bold hover:bg-white hover:border-df-rawhide transition-all shadow-sm">
+                                {tag}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </header>
+
+            {/* Categorias */}
+            <section className="py-10 border-b border-gray-200 bg-white">
+                <div className="container mx-auto px-4 md:px-6">
+                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                        {CATEGORIES.map((cat, i) => (
+                            <button key={i} className="shrink-0 snap-start flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 hover:border-df-blue hover:bg-[#F0F3FF] text-gray-700 hover:text-df-blue transition-all font-bold whitespace-nowrap">
+                                {cat}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Features Grid */}
-            <section className="py-24 bg-slate-950">
-                <div className="container mx-auto px-6">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold font-outfit mb-4">O que define a <span className="text-prime-400">STL Prime</span>?</h2>
-                        <p className="text-slate-400 max-w-xl mx-auto">Tecnologia de ponta para quem não aceita o básico na impressão 3D.</p>
+            {/* Modelos Populares (Grid Principal) */}
+            <section className="py-16 md:py-24">
+                <div className="container mx-auto px-4 md:px-6">
+
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                        <div>
+                            <div className="flex items-center gap-2 font-black text-sm uppercase tracking-widest mb-2 text-df-rawhide">
+                                <TrendingUp size={18} /> Modelos em Destaque
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-black text-df-dark">Engenharia Partilhada</h2>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex bg-gray-200 rounded-lg p-1">
+                                <button className="px-4 py-1.5 rounded-md bg-white shadow-sm font-bold text-sm">Populares</button>
+                                <button className="px-4 py-1.5 rounded-md text-gray-500 hover:text-gray-800 font-bold text-sm">Recentes</button>
+                            </div>
+                            <Link href="#" className="hidden md:flex items-center gap-1 font-bold transition-colors hover:opacity-70 text-df-blue">
+                                Ver Todos <ChevronRight size={18} />
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Grid de Cards Estilo Printables/Cults */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                        {TRENDING_MODELS.map((model) => (
+                            <div key={model.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-gray-200 hover:border-[#3347FF]/50 hover:shadow-xl transition-all duration-300">
+
+                                {/* Imagem do Modelo */}
+                                <div className="relative aspect-square bg-gray-100 overflow-hidden cursor-pointer">
+                                    <img
+                                        src={model.imageUrl}
+                                        alt={model.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        loading="lazy"
+                                    />
+                                    {/* Etiqueta de Formato (3MF/STL) */}
+                                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm text-gray-800">
+                                        {model.format}
+                                    </div>
+                                    {/* Botão de Gosto Rápido */}
+                                    <button className="absolute top-4 right-4 p-2 rounded-full bg-white/80 text-gray-400 hover:text-red-500 hover:bg-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0">
+                                        <Heart size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Informação do Modelo */}
+                                <div className="p-5 flex-1 flex flex-col justify-between">
+                                    <div className="mb-4">
+                                        <h3 className="text-lg font-bold mb-1 line-clamp-1 group-hover:text-df-blue transition-colors cursor-pointer text-df-dark">
+                                            {model.title}
+                                        </h3>
+                                        <p className="text-sm font-medium text-gray-500 cursor-pointer hover:text-gray-800">
+                                            {model.author}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1.5 text-gray-500 font-bold text-sm">
+                                                <Download size={16} /> {model.downloads}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-gray-500 font-bold text-sm">
+                                                <Heart size={16} /> {model.likes}
+                                            </div>
+                                        </div>
+
+                                        <span className={`font-black text-lg ${model.price === 0 ? 'text-[#10B981]' : 'text-df-dark'}`}>
+                                            {model.price === 0 ? 'Grátis' : `€${model.price.toFixed(2)}`}
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        ))}
+                    </div>
+
+                    <button className="w-full md:hidden mt-8 py-4 rounded-xl border-2 border-gray-200 text-gray-800 font-bold flex items-center justify-center gap-2 hover:bg-gray-50">
+                        Ver todos os modelos <ChevronRight size={18} />
+                    </button>
+                </div>
+            </section>
+
+            {/* Secção de Vantagens (Features) */}
+            <section className="py-20 border-y border-gray-200 bg-df-white">
+                <div className="container mx-auto px-4 md:px-6">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <h2 className="text-3xl md:text-5xl font-black mb-6 text-df-dark">O Padrão Data Frontier</h2>
+                        <p className="text-lg font-medium text-gray-500">
+                            A STL Prime não é apenas um repositório. É um ecossistema construído para garantir que a sua impressora 3D nunca pare.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<Binary className="text-prime-400" />}
-                            title="Modelos Inteligentes"
-                            description="Arquivos 3MF com metadados reais de sucesso global e perfis já configurados para sua máquina."
-                        />
-                        <FeatureCard
-                            icon={<BarChart3 className="text-prime-400" />}
-                            title="Analytics de Mercado"
-                            description="Saiba o que está vendendo agora. Radar de tendências para assinantes comerciais."
-                        />
-                        <FeatureCard
-                            icon={<Zap className="text-prime-400" />}
-                            title="Otimização Máxima"
-                            description="Designs pensados para economizar filamento e reduzir o tempo de impressão em até 30%."
-                        />
+                        {/* Feature 1 */}
+                        <div className="bg-[#F9F8F6] p-8 rounded-3xl border border-gray-100 hover:border-[#3347FF]/30 transition-colors">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-6 text-df-blue">
+                                <ShieldCheck size={28} />
+                            </div>
+                            <h3 className="text-xl font-bold mb-3 text-df-dark">Modelos Testados</h3>
+                            <p className="text-gray-600 font-medium leading-relaxed">
+                                Cada modelo premium é impresso e verificado na nossa fazenda de impressoras. Diga adeus aos modelos com geometria quebrada.
+                            </p>
+                        </div>
+
+                        {/* Feature 2 */}
+                        <div className="bg-[#F9F8F6] p-8 rounded-3xl border border-gray-100 hover:border-[#B2624F]/30 transition-colors">
+                            <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mb-6 text-df-rawhide">
+                                <Printer size={28} />
+                            </div>
+                            <h3 className="text-xl font-bold mb-3 text-df-dark">Ficheiros 3MF Prontos</h3>
+                            <p className="text-gray-600 font-medium leading-relaxed">
+                                Fornecemos perfis 3MF configurados com suportes, orientações e definições ideais para Bambu Lab, Prusa e Creality.
+                            </p>
+                        </div>
+
+                        {/* Feature 3 */}
+                        <div className="bg-[#F9F8F6] p-8 rounded-3xl border border-gray-100 hover:border-[#3347FF]/30 transition-colors">
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-md bg-df-blue">
+                                <Star size={28} className="text-white" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-3 text-df-dark">Assinatura Prime</h3>
+                            <p className="text-gray-600 font-medium leading-relaxed">
+                                Acesso a ficheiros exclusivos, direitos de revenda comercial de impressões e descontos na compra de filamentos.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Dynamic CTA */}
-            <section className="py-20">
-                <div className="container mx-auto px-6">
-                    <div className="glass-card rounded-3xl p-12 text-center border border-white/5 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-prime-600/10 blur-[80px] -z-10" />
-                        <h2 className="text-4xl font-bold font-outfit mb-6">Pronto para a Fronteira Digital?</h2>
-                        <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
-                            Junte-se à elite dos makers. Acesse ferramentas de precificação, marketing e modelos exclusivos.
-                        </p>
-                        <button className="bg-white text-slate-950 px-10 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors">
-                            Garantir Acesso Prime
+            {/* Call to Action Final */}
+            <section className="py-24 relative overflow-hidden bg-df-dark">
+                {/* Elemento Decorativo */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-64 blur-[120px] rounded-full pointer-events-none opacity-50 bg-df-blue"></div>
+
+                <div className="container mx-auto px-4 relative z-10 text-center">
+                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6">Pronto para aquecer o seu *Hotend*?</h2>
+                    <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto font-medium">
+                        Junte-se à comunidade. Descarregue modelos otimizados hoje mesmo ou torne-se um criador e rentabilize os seus designs.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button className="w-full sm:w-auto px-10 py-4 rounded-full font-black text-[#2B2B2B] text-lg hover:scale-105 transition-transform duration-300 shadow-xl bg-df-peach">
+                            Criar Conta Gratuita
+                        </button>
+                        <button className="w-full sm:w-auto px-10 py-4 rounded-full bg-transparent border border-white/30 text-white font-bold text-lg hover:bg-white/10 transition-colors">
+                            Explorar Catálogo
                         </button>
                     </div>
                 </div>
             </section>
-        </main>
-    );
-}
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
-    return (
-        <div className="glass-card p-8 rounded-2xl border border-white/5 hover:border-prime-500/30 transition-all group">
-            <div className="w-14 h-14 rounded-xl bg-prime-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                {icon}
-            </div>
-            <h3 className="text-xl font-bold mb-3">{title}</h3>
-            <p className="text-slate-400 leading-relaxed text-sm">
-                {description}
-            </p>
-        </div>
+            {/* Footer Minimalista */}
+            <footer className="py-12 border-t border-gray-200 bg-df-white">
+                <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-df-blue">
+                            <Box className="text-white w-5 h-5" />
+                        </div>
+                        <span className="font-black text-xl tracking-tight text-df-dark">stl<span className="text-df-blue">prime</span></span>
+                    </div>
+
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                        Tecnologia única como você.
+                    </div>
+
+                    <div className="flex gap-6 text-sm font-bold text-gray-500">
+                        <Link href="#" className="hover:text-df-blue transition-colors">Termos</Link>
+                        <Link href="#" className="hover:text-df-blue transition-colors">Privacidade</Link>
+                        <Link href="#" className="hover:text-df-blue transition-colors">Contacto</Link>
+                    </div>
+                </div>
+            </footer>
+
+        </main>
     );
 }

@@ -1,59 +1,87 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { User, ShoppingCart, Menu, X, Rocket } from 'lucide-react';
+import { Box, Search, UploadCloud, User, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl z-50 glass-card rounded-full border-white/10 px-8 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-8 h-8 rounded-lg bg-prime-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(225,29,72,0.5)] group-hover:scale-110 transition-transform">
-                    <Rocket size={16} fill="currentColor" />
+        <>
+            <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm text-df-dark">
+                <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-2 cursor-pointer group">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-df-blue group-hover:scale-105 transition-transform">
+                            <Box className="text-white w-6 h-6" />
+                        </div>
+                        <div className="flex flex-col leading-none">
+                            <span className="font-black text-xl tracking-tight text-df-dark">stl<span className="text-df-blue">prime</span></span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">by Data Frontier</span>
+                        </div>
+                    </Link>
+
+                    {/* Search Desktop (Secundária) */}
+                    <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <Search className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Pesquisar modelos 3D..."
+                            className="w-full bg-gray-100 border-transparent focus:bg-white focus:border-df-blue focus:ring-2 focus:ring-df-blue/20 rounded-full py-2.5 pl-10 pr-4 text-sm transition-all outline-none"
+                        />
+                    </div>
+
+                    {/* Ações Desktop */}
+                    <div className="hidden md:flex items-center gap-4">
+                        <Link href="/catalog/paid" className="text-gray-600 hover:text-df-blue font-bold text-sm transition-colors">
+                            Explorar
+                        </Link>
+                        <Link href="/catalog/paid" className="text-gray-600 hover:text-df-blue font-bold text-sm transition-colors">
+                            Comunidade
+                        </Link>
+                        <div className="h-6 w-px bg-gray-200 mx-2"></div>
+                        <button className="flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-df-blue transition-colors">
+                            <UploadCloud className="w-4 h-4" />
+                            Carregar
+                        </button>
+                        <Link href="/auth/signup" className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-white transition-transform hover:scale-105 bg-df-blue">
+                            <User className="w-4 h-4" />
+                            Entrar
+                        </Link>
+                    </div>
+
+                    {/* Toggle Mobile */}
+                    <button
+                        className="md:hidden p-2 text-gray-600 hover:text-df-blue"
+                        onClick={() => setIsOpen(!isOpen)}
+                    >
+                        {isOpen ? <X /> : <Menu />}
+                    </button>
                 </div>
-                <span className="text-xl font-black font-outfit text-white tracking-tighter uppercase">STL <span className="text-prime-500">Prime</span></span>
-            </Link>
+            </nav>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-10">
-                <NavLink href="/catalog/paid">PREMIUM</NavLink>
-                <NavLink href="/catalog/free">FREE</NavLink>
-                <NavLink href="/material-designer">LAB</NavLink>
-            </div>
-
-            <div className="hidden md:flex items-center gap-6">
-                <Link href="/auth/login" className="text-xs font-black text-slate-400 hover:text-white transition-colors uppercase tracking-widest">Login</Link>
-                <Link href="/auth/signup" className="px-6 py-2 rounded-full bg-white text-black text-xs font-black transition-all hover:bg-prime-500 hover:text-white uppercase tracking-widest">
-                    Join Now
-                </Link>
-            </div>
-            {/* Mobile Toggle */}
-            <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? <X /> : <Menu />}
-            </button>
-
-            {/* Mobile Menu */}
+            {/* Menu Mobile */}
             {isOpen && (
-                <div className="absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-3xl border border-white/10 p-8 rounded-3xl animate-fade-in flex flex-col gap-6 md:hidden">
-                    <Link href="/catalog/paid" className="text-sm font-black text-slate-400 hover:text-white uppercase tracking-widest">Premium</Link>
-                    <Link href="/catalog/free" className="text-sm font-black text-slate-400 hover:text-white uppercase tracking-widest">Free</Link>
-                    <Link href="/material-designer" className="text-sm font-black text-slate-400 hover:text-white uppercase tracking-widest">Lab</Link>
-                    <div className="h-[1px] bg-white/10 my-2" />
-                    <Link href="/auth/login" className="text-sm font-black text-slate-400 hover:text-white uppercase tracking-widest">Login</Link>
-                    <Link href="/auth/signup" className="text-center bg-prime-600 text-white py-4 rounded-full font-black uppercase text-xs tracking-widest">Join Now</Link>
+                <div className="md:hidden fixed inset-0 top-20 z-40 bg-white p-6 flex flex-col gap-6 border-b border-gray-200">
+                    <input
+                        type="text"
+                        placeholder="Pesquisar modelos 3D..."
+                        className="w-full bg-gray-100 border-transparent focus:border-df-blue rounded-xl py-3 px-4 text-sm outline-none"
+                    />
+                    <Link href="/catalog/paid" className="text-left font-bold text-lg text-gray-800" onClick={() => setIsOpen(false)}>Explorar</Link>
+                    <Link href="/catalog/paid" className="text-left font-bold text-lg text-gray-800" onClick={() => setIsOpen(false)}>Comunidade</Link>
+                    <button className="text-left font-bold text-lg text-df-blue flex items-center gap-2">
+                        <UploadCloud className="w-5 h-5" /> Carregar Modelo
+                    </button>
+                    <Link href="/auth/signup" className="mt-auto py-4 rounded-xl font-bold text-white text-center bg-df-blue" onClick={() => setIsOpen(false)}>
+                        Entrar / Registar
+                    </Link>
                 </div>
             )}
-        </nav>
-    );
-}
-
-function NavLink({ href, children }: { href: string, children: React.ReactNode }) {
-    return (
-        <Link href={href} className="text-[10px] font-black text-slate-400 hover:text-white transition-colors uppercase tracking-[3px] relative group">
-            {children}
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-prime-500 transition-all group-hover:w-full shadow-[0_0_8px_rgba(225,29,72,0.8)]" />
-        </Link>
+        </>
     );
 }

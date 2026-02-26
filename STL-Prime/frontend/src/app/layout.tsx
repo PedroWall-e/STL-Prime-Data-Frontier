@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR">
-            <body className={`${inter.variable} ${outfit.variable} font-sans bg-slate-950 text-slate-50`}>
+            <body className={`${inter.variable} ${outfit.variable} font-sans bg-df-lightBg text-df-dark`}>
                 <Navbar />
                 {children}
             </body>

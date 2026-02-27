@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stl-prime-frontend
+  labels:
+    app: stl-prime-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stl-prime-frontend
+  template:
+    metadata:
+      labels:
+        app: stl-prime-frontend
+    spec:
+      containers:
+      - name: stl-prime-frontend
+        # Lembre-se de substituir o PROJECT_ID pelo ID do seu projeto no GCP
+        image: gcr.io/PROJECT_ID/stl-prime-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5

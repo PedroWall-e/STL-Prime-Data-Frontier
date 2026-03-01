@@ -100,14 +100,17 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
     const [userCollections, setUserCollections] = useState<any[]>([]);
     const [savingToCollection, setSavingToCollection] = useState<string | null>(null);
+    const [hasAccess, setHasAccess] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+    const [subTier, setSubTier] = useState<string | null>(null);
     const [isCreatingNewCollection, setIsCreatingNewCollection] = useState(false);
     const [newCollName, setNewCollName] = useState('');
 
     useEffect(() => {
         const init = async () => {
             setLoading(true);
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user || null);
+            const { data: sessionData } = await supabase.auth.getSession();
+            setUser(sessionData.session?.user || null);
 
             // Fetch Product
             const { data: prodData } = await supabase
@@ -118,7 +121,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                         username,
                         full_name,
                         avatar_url,
-                        is_creator
+                        is_creator,
+                        subscription_status
                     ),
                     category:categories (name)
                 `)
@@ -133,19 +137,46 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             setProduct(prodData as any);
 
             // Fetch Reviews
-            const { data: revData } = await supabase
+            const { data: reviewsData } = await supabase
                 .from('reviews')
                 .select(`
-                    *,
-                    author:users (
-                        full_name,
-                        avatar_url
-                    )
-                `)
+                        rating,
+                        comment,
+                        created_at,
+                        author:users (full_name, avatar_url)
+                    `)
                 .eq('model_id', prodData.id)
                 .order('created_at', { ascending: false });
+            if (reviewsData) setReviews(reviewsData as any);
 
-            if (revData) setReviews(revData as any);
+            if (sessionData.session?.user) {
+                // Fetch wishlisted status
+                const { data: wishData } = await supabase
+                    .from('likes')
+                    .select('created_at')
+                    .eq('model_id', prodData.id)
+                    .eq('user_id', sessionData.session.user.id)
+                    .single();
+                if (wishData) setWishlisted(true);
+
+                // Check Access
+                if (prodData.is_free) {
+                    setHasAccess(true);
+                } else {
+                    const { data: profile } = await supabase.from('users').select('subscription_status').eq('id', sessionData.session.user.id).single();
+                    if (profile?.subscription_status) {
+                        setSubTier(profile.subscription_status);
+                    }
+                    if (profile?.subscription_status === 'pro' || profile?.subscription_status === 'premium') {
+                        setHasAccess(true);
+                    } else {
+                        const { data: purchase } = await supabase.from('purchases').select('id').eq('user_id', sessionData.session.user.id).eq('model_id', prodData.id).single();
+                        if (purchase) setHasAccess(true);
+                    }
+                }
+            } else if (prodData.is_free) {
+                setHasAccess(true);
+            }
 
             // Fetch Linked Community Post
             const { data: postData } = await supabase
@@ -164,10 +195,15 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
     const handleAddToCart = () => {
         if (!product) return;
+
+        let finalPrice = product.price;
+        if (subTier === 'pro') finalPrice = product.price * 0.8;
+        if (subTier === 'premium') finalPrice = product.price * 0.5;
+
         addItem({
             id: product.id,
             title: product.title,
-            price: product.price,
+            price: finalPrice,
             author_username: product.author.username,
             format: product.format,
             thumbnail_url: product.thumbnail_url,
@@ -242,6 +278,40 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             await addToCollection(data.id);
             setNewCollName('');
             setIsCreatingNewCollection(false);
+        }
+    };
+
+    const handleDownload = async () => {
+        if (!product || !user) {
+            router.push('/auth/login');
+            return;
+        }
+        setDownloading(true);
+        try {
+            const res = await fetch(`/api/models/${product.id}/download`);
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Erro ao baixar modelo');
+            } else if (data.files && data.files.length > 0) {
+                // Emulate downloading multiple files
+                data.files.forEach((file: any) => {
+                    const a = document.createElement('a');
+                    a.href = file.url;
+                    a.download = file.name;
+                    a.target = '_blank';
+                    // Trigger download
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+                alert('Download iniciado!');
+            }
+        } catch (err) {
+            console.error('Download error', err);
+            alert('Erro inesperado ao baixar.');
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -519,9 +589,25 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                             {/* Price Header */}
                             <div className="p-6 pb-4 border-b border-gray-100">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-4xl font-black" style={{ color: product.price === 0 ? '#10B981' : '#2B2B2B' }}>
-                                        {product.price === 0 ? 'Grátis' : `R$ ${product.price.toFixed(2)}`}
-                                    </span>
+                                    <div className="flex flex-col">
+                                        {(subTier === 'pro' || subTier === 'premium') && product.price > 0 && (
+                                            <span className="text-sm text-gray-400 line-through font-bold">
+                                                R$ {product.price.toFixed(2)}
+                                            </span>
+                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-4xl font-black" style={{ color: product.price === 0 ? '#10B981' : '#2B2B2B' }}>
+                                                {product.price === 0 ? 'Grátis' : (
+                                                    `R$ ${(subTier === 'pro' ? product.price * 0.8 : subTier === 'premium' ? product.price * 0.5 : product.price).toFixed(2)}`
+                                                )}
+                                            </span>
+                                            {(subTier === 'pro' || subTier === 'premium') && product.price > 0 && (
+                                                <span className="text-xs font-black px-2 py-0.5 rounded-md bg-[#3347FF]/10 text-[#3347FF]">
+                                                    {subTier === 'pro' ? '-20%' : '-50%'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
                                     <span className="text-xs font-black px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-700 uppercase shadow-sm border border-gray-200">{product.format}</span>
                                 </div>
                                 <p className="text-xs text-gray-500 font-bold">Licença pessoal</p>
@@ -529,12 +615,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
                             {/* CTA Buttons */}
                             <div className="p-6 space-y-3">
-                                {product.price === 0 ? (
+                                {hasAccess ? (
                                     <button
-                                        onClick={handleAddToCart}
-                                        className="w-full py-4 rounded-2xl bg-green-600 text-white font-black text-base hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
+                                        onClick={handleDownload}
+                                        disabled={downloading}
+                                        className="w-full py-4 rounded-2xl bg-green-600 text-white font-black text-base hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-600/20 disabled:opacity-50"
                                     >
-                                        <Download size={18} /> Baixar Grátis
+                                        <Download size={18} /> {downloading ? 'Processando...' : 'Baixar Arquivos'}
                                     </button>
                                 ) : (
                                     <>

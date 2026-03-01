@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Box, Search, UploadCloud, User, Menu, X, ShoppingBag, FolderHeart, LayoutDashboard } from 'lucide-react';
+import { Box, Search, UploadCloud, User, Menu, X, ShoppingBag, FolderHeart, LayoutDashboard, Settings, Bell, Rss } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -76,20 +77,11 @@ export default function Navbar() {
 
                     {/* Ações Desktop */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="/catalog/paid" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors">
-                            Explorar
-                        </Link>
-                        <Link href="/community" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors">
-                            Comunidade
-                        </Link>
-                        <a
-                            href="https://www.datafrontier3d.com.br"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-bold text-sm transition-colors"
-                        >
-                            <ShoppingBag className="w-4 h-4" />
-                            Loja DF
+                        <Link href="/" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors">Descobrir</Link>
+                        <Link href="/models?free=true" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors">Grátis</Link>
+                        <Link href="/community" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors">Comunidade</Link>
+                        <a href="https://www.datafrontier3d.com.br" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-prime-blue font-bold text-sm transition-colors flex items-center gap-1">
+                            Loja Oficial DF <Box size={14} />
                         </a>
 
                         <div className="h-6 w-px bg-gray-200 mx-2"></div>
@@ -106,11 +98,12 @@ export default function Navbar() {
                                     <FolderHeart className="w-4 h-4" />
                                     Coleções
                                 </Link>
+                                <NotificationBell />
                                 <Link href="/upload" className="flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-prime-blue transition-colors">
                                     <UploadCloud className="w-4 h-4" />
                                     Carregar
                                 </Link>
-                                <Link href="/profile" className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                <Link href="/profile/settings" className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center hover:ring-2 hover:ring-[#3347FF]/20 transition-all" title="Área do Cliente">
                                     {profile?.avatar_url ? (
                                         <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -144,27 +137,25 @@ export default function Navbar() {
                         placeholder="Pesquisar modelos 3D..."
                         className="w-full bg-gray-100 border-transparent focus:border-prime-blue rounded-xl py-3 px-4 text-sm outline-none"
                     />
-                    <Link href="/catalog/paid" className="text-left font-bold text-lg text-gray-800" onClick={() => setIsOpen(false)}>Explorar</Link>
-                    <Link href="/community" className="text-left font-bold text-lg text-gray-800" onClick={() => setIsOpen(false)}>Comunidade</Link>
-                    <a href="https://www.datafrontier3d.com.br" className="text-left font-bold text-lg text-orange-600" onClick={() => setIsOpen(false)}>Loja Data Frontier</a>
-
-                    {user ? (
-                        <>
-                            <Link href="/my-collections" className="text-left font-bold text-lg text-gray-800" onClick={() => setIsOpen(false)}>Minhas Coleções</Link>
+                            </Link>
                             <Link href="/upload" className="text-left font-bold text-lg text-prime-blue flex items-center gap-2" onClick={() => setIsOpen(false)}>
                                 <UploadCloud className="w-5 h-5" /> Carregar Modelo
                             </Link>
+                            <Link href="/profile/settings" className="text-left font-bold text-lg text-gray-800 flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                                <Settings className="w-5 h-5" /> Área do Cliente
+                            </Link>
                             {profile?.role === 'admin' && (
-                                <Link href="/admin" className="text-left font-bold text-lg text-red-600" onClick={() => setIsOpen(false)}>Painel Admin</Link>
-                            )}
-                            <button onClick={handleLogout} className="mt-auto py-4 rounded-xl font-bold text-white text-center bg-gray-800">Sair</button>
-                        </>
-                    ) : (
-                        <Link href="/auth/signup" className="mt-auto py-4 rounded-xl font-bold text-white text-center bg-prime-blue" onClick={() => setIsOpen(false)}>
-                            Entrar / Registar
-                        </Link>
-                    )}
-                </div>
+                <Link href="/admin" className="text-left font-bold text-lg text-red-600" onClick={() => setIsOpen(false)}>Painel Admin</Link>
+            )}
+            <button onClick={handleLogout} className="mt-auto py-4 rounded-xl font-bold text-white text-center bg-gray-800">Sair</button>
+        </>
+    ) : (
+        <Link href="/auth/signup" className="mt-auto py-4 rounded-xl font-bold text-white text-center bg-prime-blue" onClick={() => setIsOpen(false)}>
+            Entrar / Registar
+        </Link>
+    )
+}
+                </div >
             )}
         </>
     );

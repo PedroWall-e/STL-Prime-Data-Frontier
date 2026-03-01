@@ -5,6 +5,7 @@ import { Download, Package, UploadCloud, ArrowLeft, User, LogOut, FileDown, Chec
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { SubscriptionBadge } from '@/components/SubscriptionBadge';
 
 interface Purchase {
     id: string;
@@ -187,13 +188,24 @@ export default function DashboardPage() {
                 {user && (
                     <div className="mb-10">
                         <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-2xl bg-[#3347FF]/10 border border-[#3347FF]/20 flex items-center justify-center text-2xl font-black text-[#3347FF]">
-                                {(user.user_metadata?.full_name || user.email)?.charAt(0).toUpperCase()}
+                            <div className="w-16 h-16 rounded-2xl bg-[#3347FF]/10 border border-[#3347FF]/20 flex items-center justify-center text-2xl font-black text-[#3347FF] overflow-hidden">
+                                {profile?.avatar_url ? (
+                                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    (user.user_metadata?.full_name || user.email)?.charAt(0).toUpperCase()
+                                )}
                             </div>
                             <div>
-                                <h1 className="text-2xl font-black text-[#2B2B2B]">
-                                    {user.user_metadata?.full_name || 'Utilizador'}
-                                </h1>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h1 className="text-2xl font-black text-[#2B2B2B]">
+                                        {user.user_metadata?.full_name || 'Utilizador'}
+                                    </h1>
+                                    <SubscriptionBadge
+                                        status={profile?.subscription_status || 'free'}
+                                        joinedAt={profile?.created_at}
+                                        size="md"
+                                    />
+                                </div>
                                 <p className="text-gray-500 text-sm">{user.email}</p>
                             </div>
                         </div>
@@ -376,10 +388,10 @@ export default function DashboardPage() {
                     <div className="space-y-8 animate-fadein">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                                <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Total Ganho (Mês)</p>
-                                <p className="text-3xl font-black text-[#2B2B2B]">R$ {creatorSales.reduce((acc, s) => acc + Number(s.amount_paid), 0).toFixed(2)}</p>
-                                <div className="mt-2 flex items-center gap-1 text-xs font-bold text-green-500">
-                                    <TrendingUp size={12} /> +15% em relação ao mês anterior
+                                <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Total Ganho (Mês) Líquido</p>
+                                <p className="text-3xl font-black text-[#2B2B2B]">R$ {(creatorSales.reduce((acc, s) => acc + Number(s.amount_paid), 0) * 0.7).toFixed(2)}</p>
+                                <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                                    <TrendingUp size={12} className="text-green-500" /> Já descontada a taxa de 30%
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
@@ -418,8 +430,8 @@ export default function DashboardPage() {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-black text-[#2B2B2B]">R$ {Number(sale.amount_paid).toFixed(2)}</p>
-                                                <p className="text-[10px] text-green-500 font-black uppercase">Concluído</p>
+                                                <p className="text-sm font-black text-[#2B2B2B]">R$ {(Number(sale.amount_paid) * 0.7).toFixed(2)}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium">Preço pago: R$ {Number(sale.amount_paid).toFixed(2)}</p>
                                             </div>
                                         </div>
                                     ))

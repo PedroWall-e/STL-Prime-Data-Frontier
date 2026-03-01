@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,21 +17,49 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 });
         }
 
+        let discountMultiplier = 1;
+
+        if (userId && userId !== 'anonymous') {
+            const supabaseAdmin = createClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+
+            const { data: userProfile } = await supabaseAdmin
+                .from('users')
+                .select('subscription_status')
+                .eq('id', userId)
+                .single();
+
+            if (userProfile?.subscription_status === 'pro') {
+                discountMultiplier = 0.8; // 20% discount
+            } else if (userProfile?.subscription_status === 'premium') {
+                discountMultiplier = 0.5; // 50% discount
+            }
+        }
+
         const lineItems = items
             .filter((item: any) => item.price > 0) // Skip free items
-            .map((item: any) => ({
-                price_data: {
-                    currency: 'brl',
-                    product_data: {
-                        name: item.title,
-                        description: `por @${item.author_username} | Formato: ${item.format || 'STL'}`,
-                        images: item.thumbnail_url ? [item.thumbnail_url] : [],
-                        metadata: { model_id: item.id },
+            .map((item: any) => {
+                const finalPrice = item.price * discountMultiplier;
+
+                return {
+                    price_data: {
+                        currency: 'brl',
+                        product_data: {
+                            name: item.title,
+                            description: `por @${item.author_username} | Formato: ${item.format || 'STL'}`,
+                            images: item.thumbnail_url ? [item.thumbnail_url] : [],
+                            metadata: {
+                                model_id: item.id,
+                                author_username: item.author_username
+                            },
+                        },
+                        unit_amount: Math.round(finalPrice * 100), // Stripe uses cents
                     },
-                    unit_amount: Math.round(item.price * 100), // Stripe uses cents
-                },
-                quantity: 1,
-            }));
+                    quantity: 1,
+                };
+            });
 
         if (lineItems.length === 0) {
             return NextResponse.json({ error: 'Nenhum item pago no carrinho' }, { status: 400 });

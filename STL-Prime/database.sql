@@ -332,3 +332,125 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER post_comment_stat_trigger AFTER INSERT OR DELETE ON public.post_comments FOR EACH ROW EXECUTE FUNCTION update_post_stats();
 CREATE TRIGGER post_reaction_stat_trigger AFTER INSERT OR DELETE ON public.post_reactions FOR EACH ROW EXECUTE FUNCTION update_post_stats();
+
+-- ==========================================
+-- TABELA: follows (Seguidores de Criadores)
+-- ==========================================
+CREATE TABLE public.follows (
+    follower_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+    following_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    PRIMARY KEY (follower_id, following_id),
+    CHECK (follower_id <> following_id)
+);
+
+ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Follows are visible to everyone" ON public.follows FOR SELECT USING (true);
+CREATE POLICY "Users can manage own follows" ON public.follows FOR ALL USING (auth.uid() = follower_id);
+
+-- ==========================================
+-- TABELA: notifications (Notificações)
+-- ==========================================
+CREATE TABLE public.notifications (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,  -- destinatário
+    actor_id UUID REFERENCES public.users(id) ON DELETE CASCADE,           -- quem gerou
+    type VARCHAR(50) NOT NULL, -- 'new_follower', 'new_comment', 'new_model', 'purchase'
+    title TEXT NOT NULL,
+    body TEXT,
+    link TEXT,                 -- URL para navegar ao clicar
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users see own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "System can create notifications" ON public.notifications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+
+-- ==========================================
+-- TRIGGER: Notificar ao receber novo seguidor
+-- ==========================================
+CREATE OR REPLACE FUNCTION notify_new_follower()
+RETURNS TRIGGER AS $$
+DECLARE
+  actor_name TEXT;
+BEGIN
+  SELECT full_name INTO actor_name FROM public.users WHERE id = NEW.follower_id;
+  INSERT INTO public.notifications (user_id, actor_id, type, title, body, link)
+  VALUES (
+    NEW.following_id,
+    NEW.follower_id,
+    'new_follower',
+    'Novo seguidor!',
+    actor_name || ' começou a seguir você.',
+    '/creator/' || (SELECT username FROM public.users WHERE id = NEW.follower_id)
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_new_follower
+AFTER INSERT ON public.follows
+FOR EACH ROW EXECUTE FUNCTION notify_new_follower();
+
+-- ==========================================
+-- TRIGGER: Notificar autor do post ao receber comentário
+-- ==========================================
+CREATE OR REPLACE FUNCTION notify_new_comment()
+RETURNS TRIGGER AS $$
+DECLARE
+  post_author_id UUID;
+  post_slug TEXT;
+  actor_name TEXT;
+BEGIN
+  SELECT author_id, slug INTO post_author_id, post_slug FROM public.posts WHERE id = NEW.post_id;
+  SELECT full_name INTO actor_name FROM public.users WHERE id = NEW.author_id;
+
+  -- Don't notify self-comments
+  IF post_author_id <> NEW.author_id THEN
+    INSERT INTO public.notifications (user_id, actor_id, type, title, body, link)
+    VALUES (
+      post_author_id,
+      NEW.author_id,
+      'new_comment',
+      'Novo comentário no seu post',
+      actor_name || ' comentou: "' || LEFT(NEW.content, 60) || '"',
+      '/community/' || post_slug
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_new_comment
+AFTER INSERT ON public.post_comments
+FOR EACH ROW EXECUTE FUNCTION notify_new_comment();
+
+-- ==========================================
+-- TRIGGER: Notificar seguidores quando criador publica modelo
+-- ==========================================
+CREATE OR REPLACE FUNCTION notify_new_model()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only fire when a model is first published (is_published changes to true)
+  IF NEW.is_published = true AND (OLD.is_published = false OR OLD.is_published IS NULL) THEN
+    INSERT INTO public.notifications (user_id, actor_id, type, title, body, link)
+    SELECT
+      f.follower_id,
+      NEW.author_id,
+      'new_model',
+      'Novo modelo publicado!',
+      (SELECT full_name FROM public.users WHERE id = NEW.author_id) || ' publicou "' || NEW.title || '"',
+      '/models/' || NEW.slug
+    FROM public.follows f
+    WHERE f.following_id = NEW.author_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_new_model_published
+AFTER INSERT OR UPDATE OF is_published ON public.models
+FOR EACH ROW EXECUTE FUNCTION notify_new_model();
+

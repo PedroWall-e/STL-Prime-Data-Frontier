@@ -6,7 +6,7 @@ import { notFound, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Star, Download, Heart, Users, Package, BookOpen,
     Info, ShoppingCart, Shield, Zap, CheckCircle2, ChevronRight,
-    ExternalLink, MapPin, Calendar, Layers, Award, User
+    ExternalLink, MapPin, Calendar, Layers, Award, User, UserPlus, UserCheck
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { createClient } from '@/utils/supabase/client';
@@ -150,7 +150,13 @@ function OfficialHubHeader({ creator }: { creator: any }) {
 }
 
 // ─── Normal Creator Header ────────────────────────────────────────────────
-function NormalHeader({ creator }: { creator: any }) {
+function NormalHeader({ creator, isFollowing, onFollow, followLoading, showFollowButton }: {
+    creator: any;
+    isFollowing: boolean;
+    onFollow: () => void;
+    followLoading: boolean;
+    showFollowButton: boolean;
+}) {
     return (
         <div className="bg-white border-b border-gray-100">
             <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
@@ -170,9 +176,18 @@ function NormalHeader({ creator }: { creator: any }) {
                         </div>
                         <p className="text-gray-600 text-sm font-bold">@{creator.username}</p>
                     </div>
-                    <button className="ml-auto mb-1 px-5 py-2 rounded-full bg-[#3347FF] text-white text-sm font-bold hover:bg-[#2236ee] transition-colors shadow-md">
-                        Seguir
-                    </button>
+                    {showFollowButton && (
+                        <button
+                            onClick={onFollow}
+                            disabled={followLoading}
+                            className={`ml-auto mb-1 px-5 py-2 rounded-full text-sm font-bold transition-all shadow-md flex items-center gap-2 ${isFollowing
+                                ? 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500 border border-gray-200'
+                                : 'bg-[#3347FF] text-white hover:bg-[#2236ee]'
+                                }`}
+                        >
+                            {isFollowing ? <><UserCheck size={15} /> Seguindo</> : <><UserPlus size={15} /> Seguir</>}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
@@ -189,6 +204,10 @@ export default function CreatorPage({ params }: { params: { username: string } }
     const [models, setModels] = useState<Model[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Modelos');
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followLoading, setFollowLoading] = useState(false);
 
     useEffect(() => {
         const fetchCreatorData = async () => {
@@ -218,12 +237,32 @@ export default function CreatorPage({ params }: { params: { username: string } }
             const totalDownloads = mods?.reduce((acc, m) => acc + (m.downloads_count || 0), 0) || 0;
             const totalModels = mods?.length || 0;
 
+            // Calculate follower count
+            const { count: followers } = await supabase
+                .from('follows')
+                .select('*', { count: 'exact', head: true })
+                .eq('following_id', prof.id);
+            setFollowerCount(followers || 0);
+
+            // Check if current user follows this creator
+            const { data: { user: currentU } } = await supabase.auth.getUser();
+            setCurrentUser(currentU);
+            if (currentU && currentU.id !== prof.id) {
+                const { data: follow } = await supabase
+                    .from('follows')
+                    .select('follower_id')
+                    .eq('follower_id', currentU.id)
+                    .eq('following_id', prof.id)
+                    .single();
+                setIsFollowing(!!follow);
+            }
+
             setCreator({
                 ...prof,
                 total_downloads: totalDownloads,
                 total_models: totalModels,
-                rating: 4.98, // Mock for now
-                followers_count: 0 // Mock for now
+                rating: 4.98,
+                followers_count: followers || 0
             });
             setModels(mods || []);
             setLoading(false);
@@ -242,6 +281,26 @@ export default function CreatorPage({ params }: { params: { username: string } }
             thumbnail_url: model.thumbnail_url
         });
         openCart();
+    };
+
+    const handleFollow = async () => {
+        if (!currentUser || !creator) return;
+        setFollowLoading(true);
+        if (isFollowing) {
+            await supabase.from('follows').delete()
+                .eq('follower_id', currentUser.id)
+                .eq('following_id', creator.id);
+            setIsFollowing(false);
+            setFollowerCount(c => c - 1);
+        } else {
+            await supabase.from('follows').insert({
+                follower_id: currentUser.id,
+                following_id: creator.id
+            });
+            setIsFollowing(true);
+            setFollowerCount(c => c + 1);
+        }
+        setFollowLoading(false);
     };
 
     if (loading) {
@@ -315,6 +374,18 @@ export default function CreatorPage({ params }: { params: { username: string } }
                                 <h1 className="text-2xl font-black text-[#2B2B2B] tracking-tight">{creator.full_name}</h1>
                                 <p className="text-gray-600 text-sm font-bold">@{creator.username}</p>
                             </div>
+                            {currentUser && currentUser.id !== creator.id && (
+                                <button
+                                    onClick={handleFollow}
+                                    disabled={followLoading}
+                                    className={`ml-auto mb-1 px-5 py-2 rounded-full text-sm font-bold transition-all shadow-md flex items-center gap-2 ${isFollowing
+                                        ? 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500 border border-gray-200'
+                                        : 'bg-[#3347FF] text-white hover:bg-[#2236ee]'
+                                        }`}
+                                >
+                                    {isFollowing ? <><UserCheck size={15} /> Seguindo</> : <><UserPlus size={15} /> Seguir</>}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

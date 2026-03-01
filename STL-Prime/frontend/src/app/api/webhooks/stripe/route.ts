@@ -39,17 +39,71 @@ export async function POST(req: NextRequest) {
         const userId = session.metadata?.user_id;
 
         if (session.mode === 'payment') {
-            const itemIds = session.metadata?.item_ids?.split(',') || [];
-            const purchases = itemIds.map((modelId) => ({
-                user_id: userId,
-                model_id: modelId,
-                stripe_payment_id: session.payment_intent as string,
-                amount_paid: session.amount_total ? session.amount_total / 100 : 0,
-            }));
+            try {
+                // Fetch line items with expanded product to get metadata
+                const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+                    expand: ['data.price.product'],
+                });
 
-            if (purchases.length > 0) {
-                const { error } = await supabaseAdmin.from('purchases').insert(purchases);
-                if (error) console.error('[Webhook DB Error - Purchase]', error);
+                const purchases = [];
+
+                for (const item of lineItems.data) {
+                    const product = item.price?.product as Stripe.Product | undefined;
+                    const modelId = product?.metadata?.model_id;
+
+                    if (modelId && item.amount_total) {
+                        purchases.push({
+                            user_id: userId === 'anonymous' ? null : userId,
+                            model_id: modelId,
+                            stripe_session_id: session.id,
+                            amount_paid: item.amount_total / 100, // exact amount for this line item
+                            payment_status: 'completed'
+                        });
+                    }
+                }
+
+                if (purchases.length > 0) {
+                    const { error } = await supabaseAdmin.from('purchases').insert(purchases);
+                    if (error) console.error('[Webhook DB Error - Purchase Insert]', error);
+                    else {
+                        console.log(`[Webhook] Recorded ${purchases.length} purchases successfully.`);
+
+                        // Fire the Receipt Email
+                        try {
+                            const emailItems = lineItems.data.map(item => {
+                                const prod = item.price?.product as Stripe.Product | undefined;
+                                return {
+                                    title: prod?.name || 'Modelo 3D',
+                                    author: prod?.metadata?.author_username || 'criador',
+                                    price: item.amount_total ? (item.amount_total / 100).toFixed(2) : '0.00'
+                                };
+                            });
+
+                            const userEmail = session.customer_details?.email;
+                            const userName = session.customer_details?.name || 'Membro';
+
+                            if (userEmail) {
+                                const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3050';
+                                await fetch(`${appUrl}/api/emails/receipt`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        to: userEmail,
+                                        firstName: userName.split(' ')[0],
+                                        items: emailItems,
+                                        total: session.amount_total ? (session.amount_total / 100).toFixed(2) : '0.00',
+                                        orderId: session.payment_intent as string || session.id.slice(-8)
+                                    })
+                                });
+                                console.log('[Webhook] Trigerred receipt email for', userEmail);
+                            }
+                        } catch (emailErr) {
+                            console.error('[Webhook Error triggering receipt email]', emailErr);
+                        }
+                    }
+                }
+            } catch (lineItemsError) {
+                console.error('[Webhook Error fetching line items]', lineItemsError);
             }
         } else if (session.mode === 'subscription') {
             const planType = session.metadata?.plan_type;

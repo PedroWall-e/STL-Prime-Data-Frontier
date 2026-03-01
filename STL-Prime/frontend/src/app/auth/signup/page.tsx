@@ -44,7 +44,17 @@ export default function SignupPage() {
             if (data.user && !data.session) {
                 setSuccessMessage('Conta criada com sucesso! Verifique o seu e-mail para confirmar o cadastro.');
             } else {
-                router.push('/');
+                // Trigger Welcome Email in the background
+                fetch('/api/emails/welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: email,
+                        firstName: fullName.split(' ')[0]
+                    })
+                }).catch(err => console.error('Failed to trigger welcome email', err));
+
+                router.push('/dashboard');
                 router.refresh();
             }
         } catch (err: any) {

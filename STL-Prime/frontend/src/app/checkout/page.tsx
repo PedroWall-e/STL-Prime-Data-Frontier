@@ -80,11 +80,20 @@ export default function CheckoutPage() {
 
             <main className="container mx-auto px-4 md:px-6 py-10 max-w-4xl">
                 {items.length === 0 ? (
-                    <div className="text-center py-24">
-                        <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h2 className="text-xl font-bold text-gray-400">Carrinho vazio</h2>
-                        <Link href="/" className="inline-block mt-6 text-[#3347FF] font-bold hover:underline">
-                            ← Explorar modelos
+                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                        <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-6 shadow-sm border border-gray-200">
+                            <ShoppingCart className="w-10 h-10 text-gray-400" />
+                        </div>
+                        <h2 className="text-2xl font-black text-[#2B2B2B] mb-3">O seu carrinho está vazio</h2>
+                        <p className="text-gray-500 max-w-sm mx-auto mb-8">
+                            Looks like you haven't added any 3D models to your cart yet. Explore our growing catalog of premium digital fabrication files.
+                        </p>
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-2 bg-[#3347FF] text-white px-8 py-3.5 rounded-full font-bold hover:bg-[#2236ee] transition-all hover:shadow-lg hover:-translate-y-0.5"
+                        >
+                            Explorar Catálogo
+                            <ArrowLeft className="w-4 h-4 rotate-180" />
                         </Link>
                     </div>
                 ) : (

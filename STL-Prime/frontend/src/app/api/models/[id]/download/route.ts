@@ -26,7 +26,7 @@ export async function GET(
         // 1. Fetch Model Data
         const { data: model, error: modelError } = await supabase
             .from('models')
-            .select('id, is_free, files_list')
+            .select('id, is_free, file_url')
             .eq('id', modelId)
             .single();
 
@@ -73,30 +73,33 @@ export async function GET(
             return NextResponse.json({ error: 'Access Denied. Upgrade your plan or purchase the model to download.' }, { status: 403 });
         }
 
-        // Emulate generating a Signed URL from the storage
-        // Since we are mocking files for some elements or using actual files if uploaded:
-        let downloadPaths = [];
-        if (model.files_list && Array.isArray(model.files_list) && model.files_list.length > 0) {
-            // Get proper signed URLs for all files
-            for (const file of model.files_list) {
-                const { data: signedData, error: signError } = await supabase.storage
-                    .from('models')
-                    .createSignedUrl(file.path, 3600); // 1 hour valid
-
-                if (signedData?.signedUrl) {
-                    downloadPaths.push({ name: file.name, url: signedData.signedUrl });
-                }
-            }
-            if (downloadPaths.length > 0) {
-                return NextResponse.json({ success: true, files: downloadPaths });
-            }
+        if (!model.file_url) {
+            return NextResponse.json({ error: 'Arquivo do modelo não encontrado' }, { status: 404 });
         }
 
-        // Fallback or generic path if `files_list` is missing / empty
+        // Extrai o caminho relativo (path) do arquivo dentro do bucket a partir do file_url salvo
+        // A url padrão supabase contem: /storage/v1/object/public/models-files/[USER_ID]/[FILE_NAME]
+        const caminhoDoArquivo = model.file_url.split('/models-files/').pop();
+
+        if (!caminhoDoArquivo) {
+            return NextResponse.json({ error: 'Caminho de arquivo inválido' }, { status: 400 });
+        }
+
+        // Gera a Signed URL válida por 1 hora (3600 segundos) para o bucket 'models-files'
+        const { data: signedData, error: signError } = await supabase.storage
+            .from('models-files')
+            .createSignedUrl(caminhoDoArquivo, 3600);
+
+        if (signError || !signedData?.signedUrl) {
+            return NextResponse.json({ error: 'Erro ao assinar URL de download seguro.' }, { status: 500 });
+        }
+
         return NextResponse.json({
             success: true,
-            message: 'Acesso liberado.',
-            files: [{ name: 'placeholder_file.stl', url: 'https://example.com/mock-download' }]
+            files: [{
+                name: caminhoDoArquivo.split('/').pop() || 'modelo_download.stl',
+                url: signedData.signedUrl
+            }]
         });
 
     } catch (error: any) {

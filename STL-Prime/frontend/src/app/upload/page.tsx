@@ -49,18 +49,80 @@ export default function UploadPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!stlFile) { setMessage('Adicione um arquivo STL ou 3MF.'); return; }
+        if (!thumbFile) { setMessage('Adicione uma imagem de capa.'); return; }
         if (!form.title) { setMessage('Adicione um título ao modelo.'); return; }
 
         setStatus('uploading');
         setMessage('');
 
-        // MODO DE SIMULAÇÃO LOCAL:
-        // Finge que está fazendo upload para o Supabase Storage e salvando no Banco
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) throw new Error('Usuário não autenticado.');
+
+            // 1. Upload da Thumbnail
+            const thumbExt = thumbFile.name.split('.').pop();
+            const thumbPath = `${user.id}/${Date.now()}_thumb.${thumbExt}`;
+            const { data: thumbData, error: thumbError } = await supabase.storage
+                .from('models-thumbnails')
+                .upload(thumbPath, thumbFile);
+
+            if (thumbError) throw new Error('Erro no upload da capa: ' + thumbError.message);
+
+            const { data: publicThumbUrl } = supabase.storage
+                .from('models-thumbnails')
+                .getPublicUrl(thumbData.path);
+
+            // 2. Upload do Arquivo STL/3MF
+            const fileExt = stlFile.name.split('.').pop();
+            const filePath = `${user.id}/${Date.now()}_file.${fileExt}`;
+            const { data: stlData, error: stlError } = await supabase.storage
+                .from('models-files')
+                .upload(filePath, stlFile);
+
+            if (stlError) {
+                // Rollback: se o STL falhar, deletamos a capa já upada
+                await supabase.storage.from('models-thumbnails').remove([thumbData.path]);
+                throw new Error('Erro no upload do modelo 3D: ' + stlError.message);
+            }
+
+            const { data: publicStlUrl } = supabase.storage
+                .from('models-files')
+                .getPublicUrl(stlData.path);
+
+            // 3. Regras de Confiança (Auto-Aprovação vs. Moderado)
+            const { data: profile } = await supabase
+                .from('users')
+                .select('trust_level, subscription_status')
+                .eq('id', user.id)
+                .single();
+
+            const isTrusted = profile?.trust_level === 2 || ['pro', 'premium'].includes(profile?.subscription_status || '');
+            const initialStatus = isTrusted ? 'approved' : 'pending';
+
+            // 4. Inserir no Banco de Dados
+            const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+            const { error: insertError } = await supabase.from('models').insert({
+                title: form.title,
+                slug,
+                description: form.description,
+                price: form.isFree ? 0 : parseFloat(form.price),
+                is_free: form.isFree,
+                format: form.format,
+                thumbnail_url: publicThumbUrl.publicUrl,
+                file_url: publicStlUrl.publicUrl,
+                author_id: user.id,
+                status: initialStatus
+            });
+
+            if (insertError) {
+                // Rollback: se o DB falhar, apagamos tudo do Storage
+                await supabase.storage.from('models-thumbnails').remove([thumbData.path]);
+                await supabase.storage.from('models-files').remove([stlData.path]);
+                throw new Error('Falha ao registrar no banco de dados. ' + insertError.message);
+            }
 
             setStatus('success');
-            setMessage('Modelo publicado com sucesso (Modo Simulação)!');
+            setMessage(`Modelo publicado com sucesso! ${!isTrusted ? ' (Aguardando Moderação)' : ''}`);
             setTimeout(() => router.push('/dashboard'), 2000);
 
         } catch (err: any) {

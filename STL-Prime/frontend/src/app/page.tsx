@@ -290,215 +290,213 @@ export default function STLPrimeApp() {
                 {/* Featured Collections */}
                 <div className="mb-16">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-black text-gray-800">Coleções em Destaque</h3>
-                        <a href="#" className="text-sm font-bold text-[#3347FF] hover:underline">Ver todas</a>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {COLLECTIONS.map((col, i) => (
-                            <div key={i} className="group relative h-32 md:h-44 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-lg transition-all">
-                                <img src={col.img} alt={col.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                <div className="absolute bottom-4 left-5">
-                                    <h4 className="text-white font-bold text-lg">{col.title}</h4>
-                                    <p className="text-gray-300 text-xs font-medium">{col.items}</p>
+                        <button disabled className="text-sm font-bold text-gray-400 opacity-60 cursor-not-allowed">Ver todas (em breve)</button>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {COLLECTIONS.map((col, i) => (
+                                <div key={i} className="group relative h-32 md:h-44 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-lg transition-all">
+                                    <img src={col.img} alt={col.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                    <div className="absolute bottom-4 left-5">
+                                        <h4 className="text-white font-bold text-lg">{col.title}</h4>
+                                        <p className="text-gray-300 text-xs font-medium">{col.items}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Model Feed */}
-                <section className="mb-24">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-200 pb-4">
-                        <div className="flex items-center gap-6">
-                            <h2 className="text-3xl font-black" style={{ color: theme.dark }}>Modelos para si</h2>
-                            <div className="hidden md:flex bg-gray-100 rounded-xl p-1">
-                                {[{ id: 'trending', label: 'Em Alta' }, { id: 'new', label: 'Novidades' }].map(t => (
-                                    <button key={t.id} onClick={() => setActiveTab(t.id)}
-                                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === t.id ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
-                                        {t.label}
-                                    </button>
-                                ))}
-                                <button onClick={() => setActiveTab('premium')}
-                                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-1 ${activeTab === 'premium' ? 'bg-[#3347FF] text-white shadow-sm' : 'text-[#3347FF] hover:bg-blue-50'}`}>
-                                    <Star size={14} className={activeTab === 'premium' ? 'fill-white' : ''} /> Premium
-                                </button>
-                            </div>
+                            ))}
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl font-bold text-sm text-gray-700 hover:border-gray-300 shadow-sm">
-                            <Filter size={16} /> Filtros
-                        </button>
                     </div>
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                        {TRENDING_MODELS.map((model) => (
-                            <div key={model.id} className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#3347FF]/30 hover:shadow-xl transition-all duration-300 relative">
-                                {model.isPremium && (
-                                    <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-[#3347FF] to-[#8C9BFF] text-white p-1.5 rounded-lg shadow-md" title="Modelo Premium">
-                                        <Star size={14} className="fill-white" />
-                                    </div>
-                                )}
-
-                                <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer">
-                                    <img src={model.imageUrl} alt={model.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider text-gray-700 shadow-sm border border-gray-100/50">
-                                        {model.format}
-                                    </div>
-
-                                    {/* Hover actions */}
-                                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-end gap-2">
-                                        <button className="p-2.5 rounded-full bg-white text-gray-700 hover:text-red-500 hover:scale-110 transition-transform shadow-lg">
-                                            <Heart size={18} />
+                    {/* Model Feed */}
+                    <section className="mb-24">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-200 pb-4">
+                            <div className="flex items-center gap-6">
+                                <h2 className="text-3xl font-black" style={{ color: theme.dark }}>Modelos para si</h2>
+                                <div className="hidden md:flex bg-gray-100 rounded-xl p-1">
+                                    {[{ id: 'trending', label: 'Em Alta' }, { id: 'new', label: 'Novidades' }].map(t => (
+                                        <button key={t.id} onClick={() => setActiveTab(t.id)}
+                                            className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === t.id ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                                            {t.label}
                                         </button>
-                                        <button className="p-2.5 rounded-full bg-white text-gray-700 hover:text-[#3347FF] hover:scale-110 transition-transform shadow-lg">
-                                            <Bookmark size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleAddToCart(model)}
-                                            className="px-4 py-2.5 rounded-full text-white font-bold text-sm shadow-lg flex items-center gap-2 hover:scale-105 transition-transform"
-                                            style={{ backgroundColor: theme.blue }}
-                                        >
-                                            <ShoppingCart size={15} /> {model.price === 0 ? 'Grátis' : `R$${model.price}`}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 flex flex-col flex-1">
-                                    <div className="flex items-start justify-between gap-3 mb-3">
-                                        <h3 className="text-[15px] font-bold leading-tight line-clamp-2 group-hover:text-[#3347FF] transition-colors cursor-pointer text-gray-900">
-                                            {model.title}
-                                        </h3>
-                                        <span className="shrink-0 font-black text-sm" style={{ color: model.price === 0 ? '#10B981' : theme.dark }}>
-                                            {model.price === 0 ? 'Grátis' : `R$${model.price.toFixed(2)}`}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex flex-wrap gap-1.5 mb-4">
-                                        {model.tags.map(tag => (
-                                            <span key={tag} className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">{tag}</span>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-50">
-                                        <div className="flex items-center gap-2 cursor-pointer group/author">
-                                            <img src={model.avatar} alt={model.author} className="w-6 h-6 rounded-full bg-gray-200 border border-gray-100" />
-                                            <span className="text-xs font-bold text-gray-600 group-hover/author:text-[#3347FF] transition-colors truncate max-w-[100px]">
-                                                {model.author}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-1 text-gray-400 font-bold text-xs">
-                                                <Download size={12} /> {model.downloads}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-gray-400 font-bold text-xs">
-                                                <Heart size={12} /> {model.likes}
-                                            </div>
-                                        </div>
-                                    </div>
+                                    ))}
+                                    <button onClick={() => setActiveTab('premium')}
+                                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-1 ${activeTab === 'premium' ? 'bg-[#3347FF] text-white shadow-sm' : 'text-[#3347FF] hover:bg-blue-50'}`}>
+                                        <Star size={14} className={activeTab === 'premium' ? 'fill-white' : ''} /> Premium
+                                    </button>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-12 text-center">
-                        <button className="px-8 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-bold hover:bg-gray-50 hover:border-gray-300 transition-colors inline-flex items-center gap-2">
-                            Carregar mais modelos <ChevronRight size={18} />
-                        </button>
-                    </div>
-                </section>
-            </div>
-
-            {/* ── Subscription CTA ─────────────────────────────────────── */}
-            <section className="py-24 relative overflow-hidden bg-white border-y border-gray-100">
-                <div className="container mx-auto px-4 md:px-8">
-                    <div className="flex flex-col lg:flex-row items-center gap-16">
-                        <div className="flex-1 space-y-8">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 text-[#B2624F] text-xs font-black uppercase tracking-wider">
-                                <Star size={14} className="fill-[#B2624F]" /> Para Profissionais
-                            </div>
-                            <h2 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
-                                Desbloqueie o poder da <br />
-                                <span style={{ color: theme.blue }}>STL Prime Subscription</span>
-                            </h2>
-                            <p className="text-lg text-gray-600 font-medium max-w-lg leading-relaxed">
-                                Pare de perder tempo reparando malhas e configurando suportes. Nossos engenheiros otimizam cada arquivo 3MF para garantir impressões infalíveis na sua fazenda.
-                            </p>
-                            <ul className="space-y-4">
-                                {['Licença de venda comercial de impressões', 'Acesso a ficheiros exclusivos e premium', 'Perfis de fatiador otimizados (Bambu Studio & PrusaSlicer)', 'Descontos de 20% em filamentos de parceiros'].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 font-bold text-gray-700">
-                                        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                                            <CheckCircle2 size={14} />
-                                        </div>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
-                            <button className="px-8 py-4 rounded-xl font-black text-white shadow-xl shadow-[#3347FF]/20 hover:shadow-[#3347FF]/40 hover:-translate-y-1 transition-all" style={{ backgroundColor: theme.blue }}>
-                                Ver Planos e Preços
+                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl font-bold text-sm text-gray-700 hover:border-gray-300 shadow-sm">
+                                <Filter size={16} /> Filtros
                             </button>
                         </div>
 
-                        <div className="flex-1 relative w-full max-w-lg lg:max-w-none">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#3347FF]/10 to-[#B2624F]/10 blur-3xl rounded-full transform -skew-y-12"></div>
-                            <div className="relative grid grid-cols-2 gap-4">
-                                <img src="https://images.unsplash.com/photo-1631541909061-71e34a49cebe?auto=format&fit=crop&q=80&w=400" className="rounded-3xl shadow-2xl object-cover h-64 w-full" alt="Impressão 3D" />
-                                <img src="https://images.unsplash.com/photo-1590422749895-d04b87c48508?auto=format&fit=crop&q=80&w=400" className="rounded-3xl shadow-2xl object-cover h-64 w-full translate-y-8" alt="Design 3D" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                        {/* Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                            {TRENDING_MODELS.map((model) => (
+                                <div key={model.id} className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#3347FF]/30 hover:shadow-xl transition-all duration-300 relative">
+                                    {model.isPremium && (
+                                        <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-[#3347FF] to-[#8C9BFF] text-white p-1.5 rounded-lg shadow-md" title="Modelo Premium">
+                                            <Star size={14} className="fill-white" />
+                                        </div>
+                                    )}
 
-            {/* ── Footer ───────────────────────────────────────────────── */}
-            <footer className="pt-20 pb-10 bg-gray-50 text-gray-600 border-t border-gray-200">
-                <div className="container mx-auto px-4 md:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                        <div className="col-span-1">
-                            <div className="flex items-center gap-3 mb-6">
-                                <img src="/logo.svg" alt="STL Prime" className="w-10 h-10" />
-                                <span className="font-black text-2xl tracking-tight text-gray-900">stl<span className="text-[#3347FF]">prime</span></span>
-                            </div>
-                            <p className="text-sm text-gray-500 mb-6 font-medium leading-relaxed">
-                                O ecossistema definitivo para criadores e makers. Desenvolvido com precisão pela Data Frontier Labs.
-                            </p>
+                                    <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer">
+                                        <img src={model.imageUrl} alt={model.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider text-gray-700 shadow-sm border border-gray-100/50">
+                                            {model.format}
+                                        </div>
+
+                                        {/* Hover actions */}
+                                        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-end gap-2">
+                                            <button className="p-2.5 rounded-full bg-white text-gray-700 hover:text-red-500 hover:scale-110 transition-transform shadow-lg">
+                                                <Heart size={18} />
+                                            </button>
+                                            <button className="p-2.5 rounded-full bg-white text-gray-700 hover:text-[#3347FF] hover:scale-110 transition-transform shadow-lg">
+                                                <Bookmark size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleAddToCart(model)}
+                                                className="px-4 py-2.5 rounded-full text-white font-bold text-sm shadow-lg flex items-center gap-2 hover:scale-105 transition-transform"
+                                                style={{ backgroundColor: theme.blue }}
+                                            >
+                                                <ShoppingCart size={15} /> {model.price === 0 ? 'Grátis' : `R$${model.price}`}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 flex flex-col flex-1">
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <h3 className="text-[15px] font-bold leading-tight line-clamp-2 group-hover:text-[#3347FF] transition-colors cursor-pointer text-gray-900">
+                                                {model.title}
+                                            </h3>
+                                            <span className="shrink-0 font-black text-sm" style={{ color: model.price === 0 ? '#10B981' : theme.dark }}>
+                                                {model.price === 0 ? 'Grátis' : `R$${model.price.toFixed(2)}`}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-1.5 mb-4">
+                                            {model.tags.map(tag => (
+                                                <span key={tag} className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">{tag}</span>
+                                            ))}
+                                        </div>
+
+                                        <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-50">
+                                            <div className="flex items-center gap-2 cursor-pointer group/author">
+                                                <img src={model.avatar} alt={model.author} className="w-6 h-6 rounded-full bg-gray-200 border border-gray-100" />
+                                                <span className="text-xs font-bold text-gray-600 group-hover/author:text-[#3347FF] transition-colors truncate max-w-[100px]">
+                                                    {model.author}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1 text-gray-400 font-bold text-xs">
+                                                    <Download size={12} /> {model.downloads}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-gray-400 font-bold text-xs">
+                                                    <Heart size={12} /> {model.likes}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <div>
-                            <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Explorar</h4>
-                            <ul className="space-y-3 text-sm font-medium">
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Modelos em Alta</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">STL Prime Premium</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Desafios de Design</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Hardware & Filamentos</a></li>
-                            </ul>
+
+                        <div className="mt-12 text-center">
+                            <button className="px-8 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-bold hover:bg-gray-50 hover:border-gray-300 transition-colors inline-flex items-center gap-2">
+                                Carregar mais modelos <ChevronRight size={18} />
+                            </button>
                         </div>
-                        <div>
-                            <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Criadores</h4>
-                            <ul className="space-y-3 text-sm font-medium">
-                                <li><Link href="/upload" className="hover:text-[#3347FF] transition-colors">Vender na STL Prime</Link></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Programa de Parceiros</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Guia de Otimização 3MF</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Empresa</h4>
-                            <ul className="space-y-3 text-sm font-medium">
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Sobre a Data Frontier</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Carreiras</a></li>
-                                <li><a href="#" className="hover:text-[#3347FF] transition-colors">Suporte e FAQ</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-gray-500">
-                        <p>&copy; 2024 Data Frontier Labs. Todos os direitos reservados.</p>
-                        <div className="flex gap-6">
-                            <a href="#" className="hover:text-[#3347FF] transition-colors">Termos de Serviço</a>
-                            <a href="#" className="hover:text-[#3347FF] transition-colors">Política de Privacidade</a>
-                            <a href="#" className="hover:text-[#3347FF] transition-colors">Cookies</a>
-                        </div>
-                    </div>
+                    </section>
                 </div>
-            </footer>
-        </div>
-    );
+
+                {/* ── Subscription CTA ─────────────────────────────────────── */}
+                <section className="py-24 relative overflow-hidden bg-white border-y border-gray-100">
+                    <div className="container mx-auto px-4 md:px-8">
+                        <div className="flex flex-col lg:flex-row items-center gap-16">
+                            <div className="flex-1 space-y-8">
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 text-[#B2624F] text-xs font-black uppercase tracking-wider">
+                                    <Star size={14} className="fill-[#B2624F]" /> Para Profissionais
+                                </div>
+                                <h2 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
+                                    Desbloqueie o poder da <br />
+                                    <span style={{ color: theme.blue }}>STL Prime Subscription</span>
+                                </h2>
+                                <p className="text-lg text-gray-600 font-medium max-w-lg leading-relaxed">
+                                    Pare de perder tempo reparando malhas e configurando suportes. Nossos engenheiros otimizam cada arquivo 3MF para garantir impressões infalíveis na sua fazenda.
+                                </p>
+                                <ul className="space-y-4">
+                                    {['Licença de venda comercial de impressões', 'Acesso a ficheiros exclusivos e premium', 'Perfis de fatiador otimizados (Bambu Studio & PrusaSlicer)', 'Descontos de 20% em filamentos de parceiros'].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 font-bold text-gray-700">
+                                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                                                <CheckCircle2 size={14} />
+                                            </div>
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button className="px-8 py-4 rounded-xl font-black text-white shadow-xl shadow-[#3347FF]/20 hover:shadow-[#3347FF]/40 hover:-translate-y-1 transition-all" style={{ backgroundColor: theme.blue }}>
+                                    Ver Planos e Preços
+                                </button>
+                            </div>
+
+                            <div className="flex-1 relative w-full max-w-lg lg:max-w-none">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-[#3347FF]/10 to-[#B2624F]/10 blur-3xl rounded-full transform -skew-y-12"></div>
+                                <div className="relative grid grid-cols-2 gap-4">
+                                    <img src="https://images.unsplash.com/photo-1631541909061-71e34a49cebe?auto=format&fit=crop&q=80&w=400" className="rounded-3xl shadow-2xl object-cover h-64 w-full" alt="Impressão 3D" />
+                                    <img src="https://images.unsplash.com/photo-1590422749895-d04b87c48508?auto=format&fit=crop&q=80&w=400" className="rounded-3xl shadow-2xl object-cover h-64 w-full translate-y-8" alt="Design 3D" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Footer ───────────────────────────────────────────────── */}
+                <footer className="pt-20 pb-10 bg-gray-50 text-gray-600 border-t border-gray-200">
+                    <div className="container mx-auto px-4 md:px-8">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                            <div className="col-span-1">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <img src="/logo.svg" alt="STL Prime" className="w-10 h-10" />
+                                    <span className="font-black text-2xl tracking-tight text-gray-900">stl<span className="text-[#3347FF]">prime</span></span>
+                                </div>
+                                <p className="text-sm text-gray-500 mb-6 font-medium leading-relaxed">
+                                    O ecossistema definitivo para criadores e makers. Desenvolvido com precisão pela Data Frontier Labs.
+                                </p>
+                            </div>
+                            <div>
+                                <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Explorar</h4>
+                                <ul className="space-y-3 text-sm font-medium">
+                                    <li><Link href="/models?sort=trending" className="hover:text-[#3347FF] transition-colors">Modelos em Alta</Link></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">STL Prime Premium</button></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Desafios de Design</button></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Hardware & Filamentos</button></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Criadores</h4>
+                                <ul className="space-y-3 text-sm font-medium">
+                                    <li><Link href="/upload" className="hover:text-[#3347FF] transition-colors">Vender na STL Prime</Link></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Programa de Parceiros</button></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Guia de Otimização 3MF</button></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-gray-900 font-bold mb-4 uppercase tracking-wider text-sm">Empresa</h4>
+                                <ul className="space-y-3 text-sm font-medium">
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Sobre a Data Frontier</button></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Carreiras</button></li>
+                                    <li><button disabled className="hover:text-[#3347FF] transition-colors opacity-50 cursor-not-allowed" title="Em breve">Suporte e FAQ</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-gray-500">
+                            <p>&copy; 2024 Data Frontier Labs. Todos os direitos reservados.</p>
+                            <div className="flex gap-6">
+                                <span className="text-gray-400 opacity-60 cursor-not-allowed" title="Em breve">Termos de Serviço</span>
+                                <span className="text-gray-400 opacity-60 cursor-not-allowed" title="Em breve">Política de Privacidade</span>
+                                <span className="text-gray-400 opacity-60 cursor-not-allowed" title="Em breve">Cookies</span>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+            );
 }

@@ -40,6 +40,26 @@ interface CreatorSale {
     user: { full_name: string };
 }
 
+export interface DashboardUser {
+    id?: string;
+    email?: string;
+    user_metadata?: {
+        full_name?: string;
+    };
+}
+
+export interface UserProfile {
+    id?: string;
+    full_name?: string;
+    username?: string;
+    avatar_url?: string;
+    subscription_status?: 'free' | 'pro' | 'premium' | string;
+    role?: 'user' | 'admin' | string;
+    is_creator?: boolean;
+    trust_level?: number;
+    created_at?: string;
+}
+
 const isSimulationMode = () => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
     return !url || url.includes('SEU_PROJETO') || url.includes('mockup');
@@ -49,8 +69,8 @@ export default function DashboardPage() {
     const router = useRouter();
     const supabase = createClient();
     const [tab, setTab] = useState<'downloads' | 'mymodels' | 'profile' | 'sales'>('downloads');
-    const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<any>(null);
+    const [user, setUser] = useState<DashboardUser | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [creatorSales, setCreatorSales] = useState<CreatorSale[]>([]);
     const [myModels, setMyModels] = useState<MyModel[]>([]);

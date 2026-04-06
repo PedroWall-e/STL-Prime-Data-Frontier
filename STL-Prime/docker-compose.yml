@@ -1,28 +1,117 @@
+version: "3.8"
+
+x-supabase-config: &supabase-config
+  POSTGRES_PASSWORD: "root_password"
+  POSTGRES_DB: postgres
+  JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+  SITE_URL: "http://localhost:15300"
+  API_EXTERNAL_URL: "http://localhost:15432"
+
 services:
   db:
-    image: mysql:8.0
-    container_name: stl_prime_db
+    image: supabase/postgres:15.1.1.042
+    container_name: supabase_db
     restart: unless-stopped
-    command: --innodb-buffer-pool-size=128M --max-connections=100
-    environment:
-      MYSQL_DATABASE: stl_prime
-      MYSQL_USER: stl_user
-      MYSQL_PASSWORD: stl_password
-      MYSQL_ROOT_PASSWORD: root_password
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    # The Pi 5 relies heavily on port mapping since it's the host.
+    # Expose DB to host for DBeaver/Admin tools
     ports:
-      - "15306:3306"
+      - "15432:5432"
+    environment:
+      <<: *supabase-config
+      POSTGRES_USER: postgres
     volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "stl_user", "-p=stl_password" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - supabase_db_data:/var/lib/postgresql/data
+      - ./database.sql:/docker-entrypoint-initdb.d/99-init.sql
     deploy:
       resources:
         limits:
           cpus: '1.0'
-          memory: 800M
+          memory: 600M
+
+  rest:
+    image: postgrest/postgrest:v11.2.0
+    container_name: supabase_rest
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://postgres:root_password@db:5432/postgres
+      PGRST_DB_SCHEMA: public, storage, auth
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 100M
+
+  auth:
+    image: supabase/gotrue:v2.105.1
+    container_name: supabase_auth
+    restart: unless-stopped
+    environment:
+      <<: *supabase-config
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:root_password@db:5432/postgres
+      GOTRUE_SITE_URL: "http://localhost:15300"
+      GOTRUE_URI_ALLOW_LIST: "http://localhost:15300"
+      GOTRUE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+      GOTRUE_JWT_EXP: 3600
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 100M
+
+  storage:
+    image: supabase/storage-api:v0.43.11
+    container_name: supabase_storage
+    restart: unless-stopped
+    environment:
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      DATABASE_URL: postgres://postgres:root_password@db:5432/postgres
+      PUBURL: "http://localhost:15432/storage/v1"
+      JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+      REGION: local
+    volumes:
+      - supabase_storage_data:/var/lib/storage
+    depends_on:
+      - rest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 150M
+
+  kong:
+    image: kong:2.8.1
+    container_name: supabase_kong
+    restart: unless-stopped
+    ports:
+      - "15431:8000" # Mudamos a porta do gateway para 15431 para evitar choque com a do BD
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,jwt
+    volumes:
+      - ./kong.yml:/var/lib/kong/kong.yml
+    depends_on:
+      - rest
+      - auth
+      - storage
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 100M
 
   backend:
     build: ./backend
@@ -31,10 +120,9 @@ services:
     ports:
       - "15800:8000"
     environment:
-      DATABASE_URL: mysql+pymysql://stl_user:stl_password@db:3306/stl_prime
+      DATABASE_URL: postgresql://postgres:root_password@db:5432/postgres
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     deploy:
       resources:
         limits:
@@ -49,8 +137,12 @@ services:
       - "15300:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:15800
+      - NEXT_PUBLIC_SUPABASE_URL=http://localhost:15431 # Atualizado para a porta local do Gateway (Kong)
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZmF1bHQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYxNDIyNzcxMSwiZXhwIjoxOTI5ODAzNzExfQ.D6oB9L8Wd1z2d7_gK5vI9z-yZ9tU2c1m6_8tX7X-9_k
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZmF1bHQiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjE0MjI3NzExLCJleHAiOjE5Mjk4MDM3MTF9.RzF6v9-U03B2g8r1I0H9k4b8wD1v2C3a4p5M6y7O8P9
     depends_on:
       - backend
+      - kong
     deploy:
       resources:
         limits:
@@ -58,4 +150,5 @@ services:
           memory: 300M
 
 volumes:
-  mysql_data:
+  supabase_db_data:
+  supabase_storage_data:

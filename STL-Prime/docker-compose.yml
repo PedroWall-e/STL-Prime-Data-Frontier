@@ -102,7 +102,7 @@ services:
       KONG_DNS_ORDER: LAST,A,CNAME
       KONG_PLUGINS: request-transformer,cors,key-auth,acl,jwt
     volumes:
-      - ./kong.yml:/var/lib/kong/kong.yml
+      - ./gateway.yml:/var/lib/kong/kong.yml
     depends_on:
       - rest
       - auth

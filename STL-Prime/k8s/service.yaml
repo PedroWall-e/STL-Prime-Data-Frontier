@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stl-prime-frontend-svc
+  labels:
+    app: stl-prime-frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: stl-prime-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

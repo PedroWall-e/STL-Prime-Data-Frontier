@@ -1,0 +1,20 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/stl-prime-frontend:$COMMIT_SHA', './frontend']
+    dir: 'STL-Prime'
+  
+  # 2. Push the container image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/stl-prime-frontend:$COMMIT_SHA']
+    
+  # 3. Update the Kubernetes deployment image
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/stl-prime-frontend'
+      - 'stl-prime-frontend=gcr.io/$PROJECT_ID/stl-prime-frontend:$COMMIT_SHA'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=stl-prime-cluster'

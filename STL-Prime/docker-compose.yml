@@ -108,7 +108,7 @@ services:
       <<: *supabase-config
       POSTGRES_USER: postgres
     volumes:
-      - supabase_db_data_v6:/var/lib/postgresql/data
+      - supabase_db_data_v7:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1 -p 5432"]
       interval: 5s
@@ -179,7 +179,7 @@ services:
       JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       REGION: local
     volumes:
-      - supabase_storage_data_v6:/var/lib/storage
+      - supabase_storage_data_v7:/var/lib/storage
     depends_on:
       rest:
         condition: service_started
@@ -288,5 +288,5 @@ services:
           memory: 300M
 
 volumes:
-  supabase_db_data_v6:
-  supabase_storage_data_v6:
+  supabase_db_data_v7:
+  supabase_storage_data_v7:

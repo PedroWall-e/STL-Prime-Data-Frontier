@@ -21,9 +21,13 @@ services:
       <<: *supabase-config
       POSTGRES_USER: postgres
     volumes:
-      - supabase_db_data_v2:/var/lib/postgresql/data
+      - supabase_db_data_v3:/var/lib/postgresql/data
       - ./00-supabase-schemas.sql:/docker-entrypoint-initdb.d/00-schemas.sql
-      - ./database.sql:/docker-entrypoint-initdb.d/99-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1 -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     deploy:
       resources:
         limits:
@@ -41,7 +45,8 @@ services:
       PGRST_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       PGRST_DB_USE_LEGACY_GUCS: "false"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -63,7 +68,8 @@ services:
       GOTRUE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       GOTRUE_JWT_EXP: 3600
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -82,9 +88,12 @@ services:
       JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       REGION: local
     volumes:
-      - supabase_storage_data_v2:/var/lib/storage
+      - supabase_storage_data_v3:/var/lib/storage
     depends_on:
-      - rest
+      rest:
+        condition: service_started
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -153,12 +162,34 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:root_password@db:5432/postgres
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: '0.8'
           memory: 300M
+
+  db-init:
+    image: postgres:15-alpine
+    container_name: supabase_db_init
+    environment:
+      PGPASSWORD: "root_password"
+    volumes:
+      - ./database.sql:/tmp/database.sql
+    command: >
+      sh -c '
+        echo "Waiting for auth.users to be created by GoTrue..." &&
+        until psql -h db -U postgres -d postgres -c "SELECT 1 FROM auth.users LIMIT 1;" >/dev/null 2>&1; do sleep 2; done;
+        echo "auth.users exists! Injecting database.sql schemas..." &&
+        psql -h db -U postgres -d postgres -f /tmp/database.sql &&
+        echo "Database initialized successfully!"
+      '
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_started
 
   frontend:
     build:
@@ -183,5 +214,5 @@ services:
           memory: 300M
 
 volumes:
-  supabase_db_data_v2:
-  supabase_storage_data_v2:
+  supabase_db_data_v3:
+  supabase_storage_data_v3:

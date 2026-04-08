@@ -6,6 +6,8 @@ x-supabase-config: &supabase-config
   JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
   SITE_URL: "http://localhost:15300"
   API_EXTERNAL_URL: "http://localhost:15432"
+  ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI2MDAwMDAwMDB9.2ao3DxAoc3nVdaTeKzjBwxcKqVBVDdqFbSxWEgJln3c"
+  SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MjYwMDAwMDAwMH0.NGlfajTL38AtNO2eYSmTqocSyK6BClPz7U---KF4gS4"
 
 services:
   db:
@@ -113,7 +115,7 @@ services:
       - /bin/sh
       - -c
       - |
-        cat << 'EOF' > /kong.yml
+        cat << 'EOF' > /tmp/kong.yml
         _format_version: "2.1"
         _transform: true
         services:
@@ -139,7 +141,7 @@ services:
                   - /storage/v1
                 strip_path: true
         EOF
-        /docker-entrypoint.sh kong docker-start -c /kong.yml
+        /docker-entrypoint.sh kong docker-start -c /tmp/kong.yml
     depends_on:
       - rest
       - auth

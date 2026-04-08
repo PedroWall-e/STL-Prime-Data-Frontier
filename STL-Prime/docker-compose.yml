@@ -12,6 +12,20 @@ x-supabase-config: &supabase-config
   SERVICE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MjYwMDAwMDAwMH0.NGlfajTL38AtNO2eYSmTqocSyK6BClPz7U---KF4gS4"
 
 services:
+  db-patch:
+    image: postgres:15-alpine
+    container_name: supabase_db_patch
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c '
+      until pg_isready -h db -p 5432 -U postgres; do sleep 2; done;
+      psql -h db -U postgres -d postgres -c "CREATE SCHEMA IF NOT EXISTS storage; CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\" SCHEMA public; CREATE TABLE IF NOT EXISTS storage.buckets (id text not null primary key, name text not null unique, owner uuid, created_at timestamptz default now(), updated_at timestamptz default now(), public boolean default false, avif_autodetection boolean default false, file_size_limit bigint, allowed_mime_types text[]); CREATE TABLE IF NOT EXISTS storage.objects (id uuid not null default uuid_generate_v4() primary key, bucket_id text references storage.buckets(id), name text, owner uuid, created_at timestamptz default now(), updated_at timestamptz default now(), last_accessed_at timestamptz default now(), metadata jsonb, version text); CREATE UNIQUE INDEX IF NOT EXISTS bucketid_objname ON storage.objects (bucket_id, name);" &&
+      echo "Patch complete"
+      '
+
   db:
     build:
       context: .
@@ -104,6 +118,8 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+      db-patch:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:

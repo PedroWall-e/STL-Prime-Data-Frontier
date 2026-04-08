@@ -40,16 +40,16 @@ services:
         psql -h db -U postgres -d postgres -c "CREATE SCHEMA IF NOT EXISTS graphql_public;"
         psql -h db -U postgres -d postgres -c "CREATE SCHEMA IF NOT EXISTS realtime;"
 
-        echo "=== DB-PATCH: Creating extensions ==="
-        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;'
-        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto" SCHEMA public;'
-        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "pgjwt" SCHEMA public;'
-
-        echo "=== DB-PATCH: Creating roles (errors OK if they exist) ==="
+        echo "=== DB-PATCH: Creating roles FIRST (needed before extensions) ==="
         psql -h db -U postgres -d postgres -c "CREATE ROLE supabase_admin LOGIN NOINHERIT CREATEROLE CREATEDB REPLICATION BYPASSRLS;" 2>/dev/null || true
         psql -h db -U postgres -d postgres -c "CREATE ROLE anon NOLOGIN NOINHERIT;" 2>/dev/null || true
         psql -h db -U postgres -d postgres -c "CREATE ROLE authenticated NOLOGIN NOINHERIT;" 2>/dev/null || true
         psql -h db -U postgres -d postgres -c "CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;" 2>/dev/null || true
+
+        echo "=== DB-PATCH: Creating extensions ==="
+        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;'
+        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto" SCHEMA public;'
+        psql -h db -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS "pgjwt" SCHEMA public;'
 
         echo "=== DB-PATCH: Granting permissions ==="
         psql -h db -U postgres -d postgres -c "GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;"
@@ -61,8 +61,8 @@ services:
 
         echo "=== DB-PATCH: Creating storage baseline tables ==="
         psql -h db -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS storage.buckets (id text NOT NULL PRIMARY KEY, name text NOT NULL UNIQUE, owner uuid, created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(), public boolean DEFAULT false, avif_autodetection boolean DEFAULT false, file_size_limit bigint, allowed_mime_types text[]);"
-        psql -h db -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS storage.objects (id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY, bucket_id text REFERENCES storage.buckets(id), name text, owner uuid, created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(), last_accessed_at timestamptz DEFAULT now(), metadata jsonb, version text);"
-        psql -h db -U postgres -d postgres -c "CREATE UNIQUE INDEX IF NOT EXISTS bucketid_objname ON storage.objects (bucket_id, name);"
+        psql -h db -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS storage.objects (id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY, bucket_id text REFERENCES storage.buckets(id), name text, owner uuid, created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(), last_accessed_at timestamptz DEFAULT now(), metadata jsonb, version text);" 2>/dev/null || true
+        psql -h db -U postgres -d postgres -c "CREATE UNIQUE INDEX IF NOT EXISTS bucketid_objname ON storage.objects (bucket_id, name);" 2>/dev/null || true
 
         echo "=== DB-PATCH: Waiting for auth.users (GoTrue migrations) ==="
         for i in $$(seq 1 90); do

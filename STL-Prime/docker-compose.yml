@@ -238,6 +238,7 @@ services:
   backend:
     build:
       context: ./backend
+      no_cache: true
     container_name: stl_prime_backend
     restart: unless-stopped
     ports:
@@ -257,6 +258,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      no_cache: true
     container_name: stl_prime_frontend
     restart: unless-stopped
     ports:

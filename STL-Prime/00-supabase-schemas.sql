@@ -39,22 +39,44 @@ CREATE UNIQUE INDEX IF NOT EXISTS bucketid_objname ON storage.objects (bucket_id
 -- Supabase required roles
 DO $$
 BEGIN
+  CREATE ROLE supabase_admin LOGIN NOINHERIT CREATEROLE CREATEDB REPLICATION BYPASSRLS;
+  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'role supabase_admin already exists';
+END
+$$;
+
+DO $$
+BEGIN
   CREATE ROLE anon NOLOGIN NOINHERIT;
-  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'not creating role anon -- it already exists';
+  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'role anon already exists';
 END
 $$;
 
 DO $$
 BEGIN
   CREATE ROLE authenticated NOLOGIN NOINHERIT;
-  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'not creating role authenticated -- it already exists';
+  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'role authenticated already exists';
 END
 $$;
 
 DO $$
 BEGIN
-  CREATE ROLE service_role NOLOGIN NOINHERIT;
-  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'not creating role service_role -- it already exists';
+  CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
+  EXCEPTION WHEN DUPLICATE_OBJECT THEN RAISE NOTICE 'role service_role already exists';
 END
 $$;
 
+-- Grant schema usage so PostgREST can actually serve data
+GRANT USAGE ON SCHEMA public   TO anon, authenticated, service_role;
+GRANT USAGE ON SCHEMA auth     TO anon, authenticated, service_role;
+GRANT USAGE ON SCHEMA storage  TO anon, authenticated, service_role;
+
+-- Grant default table privileges (current + future tables)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public   GRANT SELECT ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public   GRANT ALL    ON TABLES TO authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage  GRANT ALL    ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA auth     GRANT ALL    ON TABLES TO service_role;
+
+-- Grant postgres ownership perms to supabase_admin
+GRANT ALL ON SCHEMA auth    TO supabase_admin;
+GRANT ALL ON SCHEMA storage TO supabase_admin;
+GRANT ALL ON SCHEMA public  TO supabase_admin;

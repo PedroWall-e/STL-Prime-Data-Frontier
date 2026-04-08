@@ -4,6 +4,7 @@ x-supabase-config: &supabase-config
   POSTGRES_PASSWORD: "root_password"
   POSTGRES_DB: postgres
   JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+  PGRST_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
   SITE_URL: "http://localhost:15300"
   API_EXTERNAL_URL: "http://localhost:15432"
   ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI2MDAwMDAwMDB9.2ao3DxAoc3nVdaTeKzjBwxcKqVBVDdqFbSxWEgJln3c"
@@ -89,6 +90,7 @@ services:
       TENANT_ID: "stub"
       FILE_SIZE_LIMIT: 52428800
       GLOBAL_S3_BUCKET: "stub"
+      PGRST_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       FILE_STORAGE_BACKEND_PATH: /var/lib/storage
       DATABASE_URL: postgres://postgres:root_password@db:5432/postgres
       PUBURL: "http://localhost:15432/storage/v1"

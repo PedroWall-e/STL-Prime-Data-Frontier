@@ -21,7 +21,7 @@ services:
       <<: *supabase-config
       POSTGRES_USER: postgres
     volumes:
-      - supabase_db_data:/var/lib/postgresql/data
+      - supabase_db_data_v2:/var/lib/postgresql/data
       - ./00-supabase-schemas.sql:/docker-entrypoint-initdb.d/00-schemas.sql
       - ./database.sql:/docker-entrypoint-initdb.d/99-init.sql
     deploy:
@@ -82,7 +82,7 @@ services:
       JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       REGION: local
     volumes:
-      - supabase_storage_data:/var/lib/storage
+      - supabase_storage_data_v2:/var/lib/storage
     depends_on:
       - rest
     deploy:
@@ -153,5 +153,5 @@ services:
           memory: 300M
 
 volumes:
-  supabase_db_data:
-  supabase_storage_data:
+  supabase_db_data_v2:
+  supabase_storage_data_v2:
